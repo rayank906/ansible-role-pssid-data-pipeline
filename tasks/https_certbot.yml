@@ -9,7 +9,6 @@
   ansible.builtin.stat:
     path: "{{ pssid_pipeline_dir }}/nginx/letsencrypt/live/{{ pssid_pipeline_hostname }}/fullchain.pem"
   register: pssid_cert_stat
-  become: true
 
 - name: Set the HTTPS cert-present fact
   ansible.builtin.set_fact:
@@ -19,10 +18,7 @@
   ansible.builtin.template:
     src: nginx/grafana.conf.j2
     dest: "{{ pssid_pipeline_dir }}/nginx/conf.d/grafana.conf"
-    owner: "{{ pssid_pipeline_user }}"
-    group: "{{ pssid_pipeline_user }}"
     mode: "0644"
-  become: true
   notify: reload nginx
 
 - name: Bring up Grafana + nginx + certbot
@@ -50,7 +46,6 @@
       -d {{ pssid_pipeline_hostname }}
       --email {{ pssid_certbot_email }}
       --agree-tos --no-eff-email --non-interactive
-  become: true
   register: pssid_certbot_run
   changed_when: pssid_certbot_run.rc == 0
   when: not pssid_https_cert_present
@@ -61,7 +56,6 @@
     dest: "{{ pssid_pipeline_dir }}/nginx/letsencrypt/{{ item.name }}"
     mode: "0644"
     force: false
-  become: true
   loop:
     - name: options-ssl-nginx.conf
       url: https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf
@@ -73,7 +67,6 @@
   ansible.builtin.stat:
     path: "{{ pssid_pipeline_dir }}/nginx/letsencrypt/live/{{ pssid_pipeline_hostname }}/fullchain.pem"
   register: pssid_cert_stat_after
-  become: true
   when: not pssid_https_cert_present
 
 - name: Fail clearly if Certbot did not produce a certificate
@@ -93,10 +86,7 @@
   ansible.builtin.template:
     src: nginx/grafana.conf.j2
     dest: "{{ pssid_pipeline_dir }}/nginx/conf.d/grafana.conf"
-    owner: "{{ pssid_pipeline_user }}"
-    group: "{{ pssid_pipeline_user }}"
     mode: "0644"
-  become: true
   notify: reload nginx
 
 - name: Reload nginx now so HTTPS is live before verification

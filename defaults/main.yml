@@ -13,11 +13,8 @@ pssid_pipeline_hostname: ""
 
 # Root directory on the VM where compose files, configs and provisioning
 # are staged. Replaces the old hardcoded /home/kayleyg/... logstash path.
+# Staged files are root-owned; containers read them via bind mounts.
 pssid_pipeline_dir: /opt/pssid-data-pipeline
-
-# OS user that owns the staged files and is added to the docker group.
-# Defaults to the connecting user (falls back to root when run as root).
-pssid_pipeline_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
 
 # Explicit compose project name shared by every compose invocation so that
 # reruns reattach to the same named volumes regardless of directory naming.

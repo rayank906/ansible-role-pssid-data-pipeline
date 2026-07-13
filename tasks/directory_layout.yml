@@ -1,17 +1,16 @@
 ---
+# Everything here is created root-owned. Containers read these paths via bind
+# mounts, so world-readable modes are sufficient. The one exception is the
+# plugins directory, which Grafana (uid 472) must write to - see grafana_plugins.yml.
 - name: Create the pipeline directory tree
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    owner: "{{ pssid_pipeline_user }}"
-    group: "{{ pssid_pipeline_user }}"
     mode: "0755"
-  become: true
   loop:
     - "{{ pssid_pipeline_dir }}"
     - "{{ pssid_pipeline_dir }}/logstash-pipeline"
     - "{{ pssid_pipeline_dir }}/plugins"
-    - "{{ pssid_pipeline_dir }}/grafana"
     - "{{ pssid_pipeline_dir }}/grafana/provisioning/datasources"
     - "{{ pssid_pipeline_dir }}/grafana/provisioning/dashboards"
     - "{{ pssid_pipeline_dir }}/grafana/dashboards"
@@ -20,10 +19,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    owner: "{{ pssid_pipeline_user }}"
-    group: "{{ pssid_pipeline_user }}"
     mode: "0755"
-  become: true
   loop:
     - "{{ pssid_pipeline_dir }}/nginx/conf.d"
     - "{{ pssid_pipeline_dir }}/nginx/certbot-www"
@@ -34,8 +30,5 @@
   ansible.builtin.template:
     src: profile.d/pssid-data-pipeline.sh.j2
     dest: /etc/profile.d/pssid-data-pipeline.sh
-    owner: root
-    group: root
     mode: "0644"
-  become: true
   when: pssid_export_shell_env | bool

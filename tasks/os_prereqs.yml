@@ -1,22 +1,7 @@
 ---
-- name: Ensure the docker group exists
-  ansible.builtin.group:
-    name: docker
-    state: present
-  become: true
-
-- name: Add the pipeline user to the docker group
-  ansible.builtin.user:
-    name: "{{ pssid_pipeline_user }}"
-    groups: docker
-    append: true
-  become: true
-  register: pssid_docker_group
-
-- name: Reset the connection so new docker group membership takes effect
-  ansible.builtin.meta: reset_connection
-  when: pssid_docker_group is changed
-
+# The role runs as root, so no docker-group membership is needed to get the
+# pipeline up. If you want sudo-less `docker` for a human operator, add that
+# user to the `docker` group out-of-band.
 - name: Tune vm.max_map_count for OpenSearch
   ansible.posix.sysctl:
     name: vm.max_map_count
@@ -25,4 +10,3 @@
     sysctl_set: true
     reload: true
     state: present
-  become: true

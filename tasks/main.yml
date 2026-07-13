@@ -1,30 +1,36 @@
 ---
-- name: Validate required variables
-  ansible.builtin.import_tasks: preflight.yml
+# Everything this role does needs root (apt, /opt, sysctl, the docker socket),
+# so become once here rather than per-task. Handlers declare their own become,
+# since they run outside this block and do not inherit its directives.
+- name: Deploy the pSSID data pipeline
+  become: true
+  block:
+    - name: Validate required variables
+      ansible.builtin.import_tasks: preflight.yml
 
-- name: Install Docker Engine and Compose plugin
-  ansible.builtin.import_tasks: docker_install.yml
+    - name: Install Docker Engine and Compose plugin
+      ansible.builtin.import_tasks: docker_install.yml
 
-- name: Configure OS prerequisites (docker group, sysctl)
-  ansible.builtin.import_tasks: os_prereqs.yml
+    - name: Configure OS prerequisites
+      ansible.builtin.import_tasks: os_prereqs.yml
 
-- name: Create pipeline directory layout
-  ansible.builtin.import_tasks: directory_layout.yml
+    - name: Create pipeline directory layout
+      ansible.builtin.import_tasks: directory_layout.yml
 
-- name: Stage Logstash pipeline
-  ansible.builtin.import_tasks: logstash_pipeline.yml
+    - name: Stage Logstash pipeline
+      ansible.builtin.import_tasks: logstash_pipeline.yml
 
-- name: Stage Grafana plugin
-  ansible.builtin.import_tasks: grafana_plugins.yml
+    - name: Stage Grafana plugin
+      ansible.builtin.import_tasks: grafana_plugins.yml
 
-- name: Stage Grafana provisioning (datasource + dashboard)
-  ansible.builtin.import_tasks: grafana_provisioning.yml
+    - name: Stage Grafana provisioning (datasource + dashboard)
+      ansible.builtin.import_tasks: grafana_provisioning.yml
 
-- name: Render Docker Compose files
-  ansible.builtin.import_tasks: compose_render.yml
+    - name: Render Docker Compose files
+      ansible.builtin.import_tasks: compose_render.yml
 
-- name: Bring up the pipeline stacks
-  ansible.builtin.import_tasks: compose_up.yml
+    - name: Bring up the pipeline stacks
+      ansible.builtin.import_tasks: compose_up.yml
 
-- name: Verify the deployment
-  ansible.builtin.import_tasks: verify.yml
+    - name: Verify the deployment
+      ansible.builtin.import_tasks: verify.yml

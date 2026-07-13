@@ -4,7 +4,6 @@
     src: plugins/esnet-matrix-panel
     dest: "{{ pssid_pipeline_dir }}/plugins/"
     mode: "0755"
-  become: true
 
 - name: Set ownership/permissions on the plugins directory for the Grafana container UID
   ansible.builtin.file:
@@ -14,4 +13,3 @@
     group: "472"
     mode: "0755"
     recurse: true
-  become: true

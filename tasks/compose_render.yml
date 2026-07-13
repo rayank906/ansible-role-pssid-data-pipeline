@@ -1,16 +1,13 @@
 ---
-# Render the compose files. Secrets are inlined into environment: blocks
-# (mode 0600) so no separate .env file is needed. The nginx conf.d/grafana.conf
-# is intentionally NOT rendered here - it depends on the cert-present fact and
-# is handled in https_certbot.yml.
+# Secrets are inlined into the compose environment: blocks (mode 0600, root-owned)
+# so no separate .env file is needed (the role runs as root).
+# nginx/conf.d/grafana.conf is NOT rendered here - it depends on the cert-present
+# fact and is handled in https_certbot.yml.
 - name: Render Docker Compose files
   ansible.builtin.template:
     src: "compose/{{ item }}.j2"
     dest: "{{ pssid_pipeline_dir }}/{{ item }}"
-    owner: "{{ pssid_pipeline_user }}"
-    group: "{{ pssid_pipeline_user }}"
     mode: "0600"
-  become: true
   loop:
     - opensearch-one-node.yml
     - logstash.yml

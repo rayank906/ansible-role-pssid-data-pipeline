@@ -35,8 +35,7 @@ See [`defaults/main.yml`](defaults/main.yml) for the full list. The important on
 |---|---|---|
 | `pssid_pipeline_hostname` | *(required)* | Public FQDN; drives `GF_SERVER_ROOT_URL` + nginx/cert paths |
 | `pssid_opensearch_password` | *(required, vault)* | OpenSearch admin password |
-| `pssid_pipeline_dir` | `/opt/pssid-data-pipeline` | Where files are staged on the VM |
-| `pssid_pipeline_user` | connecting user | Owns staged files, added to `docker` group |
+| `pssid_pipeline_dir` | `/opt/pssid-data-pipeline` | Where files are staged on the VM (root-owned) |
 | `pssid_enable_https` | `false` | nginx + Certbot Let's Encrypt |
 | `pssid_certbot_email` | `""` | Required when HTTPS is enabled |
 | `pssid_enable_opensearch_dashboards` | `false` | Optional OpenSearch Dashboards on :5601 |
@@ -111,7 +110,7 @@ ansible-playbook -i inventory/hosts playbook.yml --ask-vault-pass
 ## What it does (maps to the manual README)
 
 1. Installs Docker Engine + Compose plugin (custom apt tasks).
-2. Adds the user to `docker`, resets the connection, tunes `vm.max_map_count`.
+2. Tunes `vm.max_map_count` for OpenSearch.
 3. Stages compose files, Logstash pipeline, plugin, and Grafana provisioning.
 4. Creates the shared Docker network and brings up the stacks in order:
    OpenSearch → Logstash → Grafana (+nginx/Certbot if HTTPS) → optional Dashboards.
