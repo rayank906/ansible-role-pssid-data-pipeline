@@ -1,4 +1,5 @@
 ---
+# Order matters: OpenSearch must be listening before Logstash and Grafana start.
 - name: Create the shared external Docker network
   community.docker.docker_network:
     name: "{{ pssid_docker_network_name }}"

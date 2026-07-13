@@ -1,6 +1,5 @@
 ---
 # {{ ansible_managed }}
-version: '3'
 services:
   logstash:
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin:latest
@@ -21,5 +20,5 @@ services:
 
 networks:
   opensearch-net:
-    external:
-      name: {{ pssid_docker_network_name }}
+    external: true
+    name: {{ pssid_docker_network_name }}

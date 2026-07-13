@@ -1,6 +1,5 @@
 ---
 # {{ ansible_managed }}
-version: '3'
 services:
   opensearch-dashboard:
     image: opensearchproject/opensearch-dashboards:latest
@@ -17,5 +16,5 @@ services:
 
 networks:
   opensearch-net:
-    external:
-      name: {{ pssid_docker_network_name }}
+    external: true
+    name: {{ pssid_docker_network_name }}

@@ -1,6 +1,5 @@
 ---
 # {{ ansible_managed }}
-version: "3"
 
 services:
   grafana:
@@ -77,5 +76,5 @@ volumes:
 
 networks:
   opensearch-net:
-    external:
-      name: {{ pssid_docker_network_name }}
+    external: true
+    name: {{ pssid_docker_network_name }}
