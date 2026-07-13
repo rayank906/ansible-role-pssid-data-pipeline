@@ -5,11 +5,13 @@
     dest: "{{ pssid_pipeline_dir }}/plugins/"
     mode: "0755"
 
-- name: Set ownership/permissions on the plugins directory for the Grafana container UID
+# Grafana runs as uid 472 and GF_INSTALL_PLUGINS downloads grafana-opensearch-datasource
+# into this same bind-mounted directory, so it must own it. Set ownership only - forcing
+# a recursive mode would rewrite the permissions of Grafana's own plugin files every run.
+- name: Give the Grafana container UID ownership of the plugins directory
   ansible.builtin.file:
     path: "{{ pssid_pipeline_dir }}/plugins"
     state: directory
     owner: "472"
     group: "472"
-    mode: "0755"
     recurse: true

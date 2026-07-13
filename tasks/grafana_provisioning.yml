@@ -13,15 +13,15 @@
     dest: "{{ pssid_pipeline_dir }}/grafana/provisioning/dashboards/dashboards.yml"
     mode: "0644"
 
-- name: Copy the pSSID example dashboard into place
+# The shipped dashboard hardcodes two datasource UIDs. Rewrite them to the UID we
+# provision, so every panel resolves on first load. This must happen as part of
+# writing the file: a copy followed by an in-place `replace` would churn forever
+# (copy restores the stale UIDs, replace rewrites them, every single run).
+- name: Install the pSSID dashboard with the provisioned datasource UID
   ansible.builtin.copy:
-    src: grafana/dashboards/example-dashboard.json
+    content: >-
+      {{ lookup('file', 'grafana/dashboards/example-dashboard.json')
+         | regex_replace('"uid":\s*"(' ~ (pssid_grafana_dashboard_stale_uids | join('|')) ~ ')"',
+                         '"uid": "' ~ pssid_grafana_datasource_uid ~ '"') }}
     dest: "{{ pssid_pipeline_dir }}/grafana/dashboards/example-dashboard.json"
     mode: "0644"
-
-- name: Normalize hardcoded OpenSearch datasource UIDs in the dashboard JSON
-  ansible.builtin.replace:
-    path: "{{ pssid_pipeline_dir }}/grafana/dashboards/example-dashboard.json"
-    regexp: '"uid":\s*"{{ item }}"'
-    replace: '"uid": "{{ pssid_grafana_datasource_uid }}"'
-  loop: "{{ pssid_grafana_dashboard_stale_uids }}"
