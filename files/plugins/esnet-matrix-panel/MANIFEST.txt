@@ -1,0 +1,36 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "community",
+  "signedByOrg": "esnet",
+  "signedByOrgName": "esnet",
+  "plugin": "esnet-matrix-panel",
+  "version": "1.2.0",
+  "time": 1749846478077,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "module.js.map": "9c44a0bcd7ad2e658106616aecebb6499333083e96b7f90d3a096dda90420531",
+    "CHANGELOG.md": "4fd3d1cbe055577a925d7652c134949d1c4a2fc7ca0eaaddf0829643159a3fbb",
+    "module.js": "92f3f24a2da500f5e922147f994dc2ae0a91ff3daa638c0d6d8aafe5e15e7fd6",
+    "img/logo.svg": "1defc6f7e585c67657bcfd8fddc599ee7dfa82f8674413f49fa274c2cd453ec6",
+    "img/matrix-plugin.png": "7845b200106a34ffb4fbe9f79f83461f13f8f7e4046feb0a1ee3eede3170270b",
+    "img/matrix-plugin2.png": "189dcd2349e2068169c2ee1edc742e2eecdfb7ef7abbcfa68b195d216274454a",
+    "README.md": "259c8efaa74be81a10b88134a242946ee9baab78becc836c22c1e141add36b45",
+    "LICENSE": "96b9ca9fdc37ad5ecf0e279997062f408283b247d5b47b6b741cd33965853796",
+    "plugin.json": "2b96a4514d621d92db0f7d3db9f803b8f2745af15071475750bc905b68637f8e"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.11
+Comment: https://openpgpjs.org
+
+wrkEARMKAAYFAmhMic4AIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
+cIhm50qMAgkB1Up35WHCl+lVPyfIMj9Ug1otZJjv2CH3QUEfZ9B7Althrruo
+5KHYV8hR1RoLQbeuzQaoUZM7SKhHq7bGD4jBHF4CCQBSole6kOZvgMTc2/gZ
+O2frmqE1tokJnHFPPC7QTGkKxcQu6X4vFpQ/67Gb4K+CyXMU0JFpgkX43T/e
+u5apIV+WMQ==
+=vJLD
+-----END PGP SIGNATURE-----

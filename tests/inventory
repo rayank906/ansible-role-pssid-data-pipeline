@@ -1,0 +1,8 @@
+# Test inventory for ansible-role-pssid-data-pipeline.
+#
+# Option A - run Ansible ON the VM itself (simplest, no SSH setup):
+localhost ansible_connection=local
+
+# Option B - run from your control node (Mac) against a remote VM.
+# Comment out the localhost line above, uncomment and edit below:
+# pssid-test ansible_host=10.0.0.42 ansible_user=ubuntu

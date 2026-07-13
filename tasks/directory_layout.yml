@@ -1,0 +1,41 @@
+---
+- name: Create the pipeline directory tree
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ pssid_pipeline_user }}"
+    group: "{{ pssid_pipeline_user }}"
+    mode: "0755"
+  become: true
+  loop:
+    - "{{ pssid_pipeline_dir }}"
+    - "{{ pssid_pipeline_dir }}/logstash-pipeline"
+    - "{{ pssid_pipeline_dir }}/plugins"
+    - "{{ pssid_pipeline_dir }}/grafana"
+    - "{{ pssid_pipeline_dir }}/grafana/provisioning/datasources"
+    - "{{ pssid_pipeline_dir }}/grafana/provisioning/dashboards"
+    - "{{ pssid_pipeline_dir }}/grafana/dashboards"
+
+- name: Create the nginx/certbot directory tree
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ pssid_pipeline_user }}"
+    group: "{{ pssid_pipeline_user }}"
+    mode: "0755"
+  become: true
+  loop:
+    - "{{ pssid_pipeline_dir }}/nginx/conf.d"
+    - "{{ pssid_pipeline_dir }}/nginx/certbot-www"
+    - "{{ pssid_pipeline_dir }}/nginx/letsencrypt"
+  when: pssid_enable_https | bool
+
+- name: Export OpenSearch env vars for operator troubleshooting
+  ansible.builtin.template:
+    src: profile.d/pssid-data-pipeline.sh.j2
+    dest: /etc/profile.d/pssid-data-pipeline.sh
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+  when: pssid_export_shell_env | bool

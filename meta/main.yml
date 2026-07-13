@@ -1,0 +1,25 @@
+---
+galaxy_info:
+  role_name: pssid_data_pipeline
+  namespace: umnet_perfsonar
+  author: UMNET-perfSONAR
+  description: >-
+    Stand up the pSSID data analytics pipeline (OpenSearch + Logstash +
+    Grafana, optionally nginx/Certbot HTTPS and OpenSearch Dashboards) on an
+    Ubuntu 22 VM via Docker Compose, fully provisioned so Grafana shows the
+    pSSID dashboard in a browser with no manual UI steps.
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+  galaxy_tags:
+    - monitoring
+    - grafana
+    - opensearch
+    - logstash
+    - docker
+    - perfsonar
+
+dependencies: []

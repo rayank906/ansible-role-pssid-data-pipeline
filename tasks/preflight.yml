@@ -1,0 +1,44 @@
+---
+- name: Assert this is a supported Ubuntu host
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['distribution'] == 'Ubuntu'
+    fail_msg: >-
+      This role only supports Ubuntu (targeting 22.04/jammy); detected
+      {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}.
+
+- name: Assert required variables are set
+  ansible.builtin.assert:
+    that:
+      - pssid_pipeline_hostname | length > 0
+      - pssid_opensearch_password | length > 0
+    fail_msg: >-
+      pssid_pipeline_hostname and pssid_opensearch_password are required.
+      Set them at the playbook level (the password via Ansible Vault).
+
+- name: Assert Certbot email is set when HTTPS is enabled
+  ansible.builtin.assert:
+    that:
+      - pssid_certbot_email | length > 0
+    fail_msg: "pssid_certbot_email is required when pssid_enable_https is true."
+  when: pssid_enable_https | bool
+
+- name: Assert Google SSO secrets are set when SSO is enabled
+  ansible.builtin.assert:
+    that:
+      - pssid_grafana_google_client_id | length > 0
+      - pssid_grafana_google_client_secret | length > 0
+    fail_msg: >-
+      pssid_grafana_google_client_id and pssid_grafana_google_client_secret
+      are required when pssid_grafana_google_sso_enabled is true.
+  when: pssid_grafana_google_sso_enabled | bool
+
+- name: Assert SMTP credentials are set when SMTP is enabled
+  ansible.builtin.assert:
+    that:
+      - pssid_grafana_smtp_user | length > 0
+      - pssid_grafana_smtp_password | length > 0
+    fail_msg: >-
+      pssid_grafana_smtp_user and pssid_grafana_smtp_password are required
+      when pssid_grafana_smtp_enabled is true.
+  when: pssid_grafana_smtp_enabled | bool

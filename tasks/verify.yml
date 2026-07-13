@@ -1,0 +1,55 @@
+---
+- name: Set the Grafana base URL for verification
+  ansible.builtin.set_fact:
+    pssid_grafana_verify_url: >-
+      {{ 'https://' ~ pssid_pipeline_hostname
+         if pssid_enable_https
+         else 'http://127.0.0.1:3000' }}
+
+- name: Wait for Grafana health endpoint to report OK
+  ansible.builtin.uri:
+    url: "{{ pssid_grafana_verify_url }}/api/health"
+    validate_certs: "{{ pssid_enable_https | bool }}"
+    return_content: true
+  register: pssid_grafana_health
+  until: pssid_grafana_health.status == 200
+  retries: 30
+  delay: 5
+
+# The authenticated API checks use basic auth (admin/admin), which is only
+# available when Google SSO is disabled. When SSO is on, provisioning is still
+# applied by Grafana on startup - verify visually in the browser instead.
+- name: Verify the OpenSearch datasource was auto-provisioned
+  ansible.builtin.uri:
+    url: "{{ pssid_grafana_verify_url }}/api/datasources/uid/{{ pssid_grafana_datasource_uid }}"
+    validate_certs: "{{ pssid_enable_https | bool }}"
+    url_username: admin
+    url_password: admin
+    force_basic_auth: true
+    return_content: true
+  register: pssid_ds_check
+  failed_when: >-
+    pssid_ds_check.status != 200
+    or pssid_ds_check.json.type != 'grafana-opensearch-datasource'
+  when: not (pssid_grafana_google_sso_enabled | bool)
+
+- name: Verify the pSSID dashboard was auto-provisioned
+  ansible.builtin.uri:
+    url: "{{ pssid_grafana_verify_url }}/api/search?type=dash-db"
+    validate_certs: "{{ pssid_enable_https | bool }}"
+    url_username: admin
+    url_password: admin
+    force_basic_auth: true
+    return_content: true
+  register: pssid_dash_check
+  failed_when: >-
+    pssid_dash_check.status != 200
+    or (pssid_dash_check.json | length) == 0
+  when: not (pssid_grafana_google_sso_enabled | bool)
+
+- name: Report where Grafana is reachable
+  ansible.builtin.debug:
+    msg: >-
+      pSSID pipeline is up. Open {{ pssid_grafana_root_url }} in a browser -
+      the OpenSearch datasource and pSSID dashboard are provisioned. Panels
+      populate once pscheduler probes ship data to Logstash on port 9400.

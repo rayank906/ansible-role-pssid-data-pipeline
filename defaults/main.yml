@@ -1,0 +1,110 @@
+---
+# =====================================================================
+# REQUIRED - no safe default, asserted in tasks/preflight.yml
+# =====================================================================
+
+# Public hostname/FQDN the pipeline is reached at. Drives GF_SERVER_ROOT_URL
+# and (when HTTPS is enabled) the nginx server_name and cert paths.
+pssid_pipeline_hostname: ""
+
+# =====================================================================
+# Layout / identity
+# =====================================================================
+
+# Root directory on the VM where compose files, configs and provisioning
+# are staged. Replaces the old hardcoded /home/kayleyg/... logstash path.
+pssid_pipeline_dir: /opt/pssid-data-pipeline
+
+# OS user that owns the staged files and is added to the docker group.
+# Defaults to the connecting user (falls back to root when run as root).
+pssid_pipeline_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
+
+# Explicit compose project name shared by every compose invocation so that
+# reruns reattach to the same named volumes regardless of directory naming.
+pssid_docker_compose_project_name: pssid-data-pipeline
+
+# External docker network shared by all four compose stacks.
+pssid_docker_network_name: pssid-data-pipeline_opensearch-net
+
+# =====================================================================
+# Feature toggles
+# =====================================================================
+
+pssid_enable_https: false
+pssid_enable_opensearch_dashboards: false
+pssid_grafana_google_sso_enabled: false
+pssid_grafana_smtp_enabled: false
+# Export OPENSEARCH_* to /etc/profile.d for operator troubleshooting (curl etc.)
+pssid_export_shell_env: false
+
+# =====================================================================
+# Kernel / OS tuning
+# =====================================================================
+
+pssid_vm_max_map_count: 262144
+
+# =====================================================================
+# OpenSearch
+# =====================================================================
+
+pssid_opensearch_host: "https://opensearch-node1:9200"
+pssid_opensearch_user: admin
+# SECRET - supply via vault at the playbook level.
+pssid_opensearch_password: ""
+# Initial admin bootstrap password (OpenSearch requires a strong value).
+# Defaults to the same secret; override if you want them to differ.
+pssid_opensearch_initial_admin_password: "{{ pssid_opensearch_password }}"
+
+# =====================================================================
+# Grafana
+# =====================================================================
+
+pssid_grafana_image: grafana/grafana-enterprise
+# Root URL Grafana advertises. HTTPS when nginx is fronting it, else :3000.
+pssid_grafana_root_url: >-
+  {{ 'https://' ~ pssid_pipeline_hostname
+     if pssid_enable_https
+     else 'http://' ~ pssid_pipeline_hostname ~ ':3000' }}
+
+# Datasource provisioning - pinned UID so dashboard panels always resolve.
+pssid_grafana_datasource_name: OpenSearch
+pssid_grafana_datasource_uid: opensearch-pscheduler
+pssid_grafana_datasource_index_pattern: "pscheduler_*"
+pssid_grafana_datasource_time_field: "@timestamp"
+
+# Hardcoded UIDs baked into the shipped example-dashboard.json that get
+# rewritten to pssid_grafana_datasource_uid on copy (see grafana_provisioning).
+pssid_grafana_dashboard_stale_uids:
+  - aetnpntfjsmioa
+  - cepck5jtcc45cc
+
+# Google SSO (only rendered when pssid_grafana_google_sso_enabled) - SECRETS via vault.
+pssid_grafana_google_client_id: ""
+pssid_grafana_google_client_secret: ""
+pssid_grafana_google_allowed_domains: umich.edu
+
+# SMTP alerting (only rendered when pssid_grafana_smtp_enabled) - SECRETS via vault.
+pssid_grafana_smtp_host: "smtp.gmail.com:587"
+pssid_grafana_smtp_user: ""
+pssid_grafana_smtp_password: ""
+pssid_grafana_smtp_from_name: Grafana
+
+# =====================================================================
+# HTTPS / Certbot (only used when pssid_enable_https)
+# =====================================================================
+
+# Email Let's Encrypt uses for expiry notices.
+pssid_certbot_email: ""
+
+# =====================================================================
+# Docker Engine install (custom apt tasks)
+# =====================================================================
+
+pssid_docker_apt_gpg_url: https://download.docker.com/linux/ubuntu/gpg
+pssid_docker_apt_repo_url: https://download.docker.com/linux/ubuntu
+pssid_docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin

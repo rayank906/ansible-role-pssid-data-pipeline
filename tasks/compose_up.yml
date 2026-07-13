@@ -1,0 +1,56 @@
+---
+- name: Create the shared external Docker network
+  community.docker.docker_network:
+    name: "{{ pssid_docker_network_name }}"
+    state: present
+
+- name: Bring up OpenSearch
+  community.docker.docker_compose_v2:
+    project_src: "{{ pssid_pipeline_dir }}"
+    project_name: "{{ pssid_docker_compose_project_name }}"
+    files:
+      - opensearch-one-node.yml
+    state: present
+
+- name: Wait for OpenSearch to accept connections on port 9200
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 9200
+    timeout: 180
+
+- name: Bring up Logstash
+  community.docker.docker_compose_v2:
+    project_src: "{{ pssid_pipeline_dir }}"
+    project_name: "{{ pssid_docker_compose_project_name }}"
+    files:
+      - logstash.yml
+    state: present
+
+- name: Bring up Grafana with HTTPS (nginx + certbot bootstrap)
+  ansible.builtin.import_tasks: https_certbot.yml
+  when: pssid_enable_https | bool
+
+- name: Bring up Grafana (HTTP only)
+  community.docker.docker_compose_v2:
+    project_src: "{{ pssid_pipeline_dir }}"
+    project_name: "{{ pssid_docker_compose_project_name }}"
+    files:
+      - grafana.yml
+    state: present
+  when: not (pssid_enable_https | bool)
+
+- name: Wait for Grafana to accept connections on port 3000
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 3000
+    timeout: 120
+  when: not (pssid_enable_https | bool)
+
+- name: Bring up OpenSearch Dashboards
+  community.docker.docker_compose_v2:
+    project_src: "{{ pssid_pipeline_dir }}"
+    project_name: "{{ pssid_docker_compose_project_name }}"
+    files:
+      - opensearch-dashboard.yml
+    state: present
+  when: pssid_enable_opensearch_dashboards | bool

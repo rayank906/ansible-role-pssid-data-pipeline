@@ -1,0 +1,103 @@
+---
+# Idempotent Let's Encrypt bootstrap:
+#   1. detect whether a cert already exists (host-side stat, bind-mounted dir)
+#   2. render nginx in HTTP-only bootstrap mode if not
+#   3. bring up grafana + nginx + certbot
+#   4. issue the cert once (skipped entirely on reruns)
+#   5. re-render nginx to full HTTPS and reload
+- name: Check for an existing Let's Encrypt certificate
+  ansible.builtin.stat:
+    path: "{{ pssid_pipeline_dir }}/nginx/letsencrypt/live/{{ pssid_pipeline_hostname }}/fullchain.pem"
+  register: pssid_cert_stat
+  become: true
+
+- name: Set the HTTPS cert-present fact
+  ansible.builtin.set_fact:
+    pssid_https_cert_present: "{{ pssid_cert_stat.stat.exists }}"
+
+- name: Render nginx config (bootstrap HTTP-only until a cert exists)
+  ansible.builtin.template:
+    src: nginx/grafana.conf.j2
+    dest: "{{ pssid_pipeline_dir }}/nginx/conf.d/grafana.conf"
+    owner: "{{ pssid_pipeline_user }}"
+    group: "{{ pssid_pipeline_user }}"
+    mode: "0644"
+  become: true
+  notify: reload nginx
+
+- name: Bring up Grafana + nginx + certbot
+  community.docker.docker_compose_v2:
+    project_src: "{{ pssid_pipeline_dir }}"
+    project_name: "{{ pssid_docker_compose_project_name }}"
+    files:
+      - grafana.yml
+    state: present
+
+- name: Wait for nginx to accept connections on port 80
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 80
+    timeout: 60
+
+- name: Issue the Let's Encrypt certificate (one-shot, first run only)
+  ansible.builtin.command:
+    cmd: >-
+      docker compose
+      -p {{ pssid_docker_compose_project_name }}
+      -f {{ pssid_pipeline_dir }}/grafana.yml
+      run --rm --entrypoint "" certbot
+      certbot certonly --webroot -w /var/www/certbot
+      -d {{ pssid_pipeline_hostname }}
+      --email {{ pssid_certbot_email }}
+      --agree-tos --no-eff-email --non-interactive
+  become: true
+  register: pssid_certbot_run
+  changed_when: pssid_certbot_run.rc == 0
+  when: not pssid_https_cert_present
+
+- name: Fetch Certbot recommended TLS options and DH params
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ pssid_pipeline_dir }}/nginx/letsencrypt/{{ item.name }}"
+    mode: "0644"
+    force: false
+  become: true
+  loop:
+    - name: options-ssl-nginx.conf
+      url: https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf
+    - name: ssl-dhparams.pem
+      url: https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem
+  when: not pssid_https_cert_present
+
+- name: Re-check for the certificate after issuance
+  ansible.builtin.stat:
+    path: "{{ pssid_pipeline_dir }}/nginx/letsencrypt/live/{{ pssid_pipeline_hostname }}/fullchain.pem"
+  register: pssid_cert_stat_after
+  become: true
+  when: not pssid_https_cert_present
+
+- name: Fail clearly if Certbot did not produce a certificate
+  ansible.builtin.assert:
+    that:
+      - pssid_cert_stat_after.stat.exists
+    fail_msg: >-
+      Certbot did not produce a certificate. Check `docker logs nginx` and that
+      {{ pssid_pipeline_hostname }} resolves to this host and ports 80/443 are open.
+  when: not pssid_https_cert_present
+
+- name: Update the cert-present fact now that issuance ran
+  ansible.builtin.set_fact:
+    pssid_https_cert_present: "{{ pssid_cert_stat_after.stat.exists | default(pssid_https_cert_present) }}"
+
+- name: Re-render nginx config to full HTTPS now that a cert exists
+  ansible.builtin.template:
+    src: nginx/grafana.conf.j2
+    dest: "{{ pssid_pipeline_dir }}/nginx/conf.d/grafana.conf"
+    owner: "{{ pssid_pipeline_user }}"
+    group: "{{ pssid_pipeline_user }}"
+    mode: "0644"
+  become: true
+  notify: reload nginx
+
+- name: Reload nginx now so HTTPS is live before verification
+  ansible.builtin.meta: flush_handlers

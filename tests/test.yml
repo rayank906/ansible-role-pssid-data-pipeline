@@ -1,0 +1,19 @@
+---
+# Minimal test play for ansible-role-pssid-data-pipeline.
+#
+#   ansible-galaxy collection install -r ../requirements.yml
+#   ansible-playbook -i inventory test.yml \
+#       -e pssid_opensearch_password='TestPass123!' --ask-become-pass
+#
+# HTTPS is left OFF here so the test needs no public DNS or Let's Encrypt.
+# Flip pssid_enable_https on once you have a real hostname + open 80/443.
+- name: Test pSSID data pipeline role
+  hosts: all
+  become: true
+  vars:
+    pssid_pipeline_hostname: "{{ ansible_default_ipv4.address | default('localhost') }}"
+    pssid_enable_https: false
+    pssid_enable_opensearch_dashboards: false
+    # pssid_opensearch_password is passed on the CLI with -e (keep it out of git).
+  roles:
+    - role: ansible-role-pssid-data-pipeline

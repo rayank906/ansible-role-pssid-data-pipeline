@@ -1,0 +1,14 @@
+# {{ ansible_managed }}
+apiVersion: 1
+
+providers:
+  - name: pssid-default-dashboards
+    orgId: 1
+    folder: "pSSID"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

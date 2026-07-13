@@ -1,0 +1,25 @@
+---
+# {{ ansible_managed }}
+version: '3'
+services:
+  logstash:
+    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:latest
+    container_name: logstash
+    user: root
+    volumes:
+      - {{ pssid_pipeline_dir }}/logstash-pipeline:/usr/share/logstash/pipeline
+    ports:
+      - 9400:9400
+    environment:
+      - OPENSEARCH_HOST={{ pssid_opensearch_host }}
+      - OPENSEARCH_USER={{ pssid_opensearch_user }}
+      - OPENSEARCH_PASSWORD={{ pssid_opensearch_password }}
+    command: logstash -f /usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - opensearch-net
+    restart: always
+
+networks:
+  opensearch-net:
+    external:
+      name: {{ pssid_docker_network_name }}

@@ -1,0 +1,20 @@
+# {{ ansible_managed }}
+apiVersion: 1
+
+datasources:
+  - name: {{ pssid_grafana_datasource_name }}
+    type: grafana-opensearch-datasource
+    access: proxy
+    uid: {{ pssid_grafana_datasource_uid }}
+    url: {{ pssid_opensearch_host }}
+    isDefault: true
+    basicAuth: true
+    basicAuthUser: {{ pssid_opensearch_user }}
+    jsonData:
+      database: "{{ pssid_grafana_datasource_index_pattern }}"
+      flavor: "OpenSearch"
+      timeField: "{{ pssid_grafana_datasource_time_field }}"
+      tlsSkipVerify: true
+    secureJsonData:
+      basicAuthPassword: "{{ pssid_opensearch_password }}"
+    editable: false

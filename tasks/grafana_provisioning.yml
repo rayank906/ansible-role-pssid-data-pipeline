@@ -1,0 +1,35 @@
+---
+- name: Render the OpenSearch datasource provisioning file
+  ansible.builtin.template:
+    src: grafana/provisioning/datasources/opensearch.yml.j2
+    dest: "{{ pssid_pipeline_dir }}/grafana/provisioning/datasources/opensearch.yml"
+    owner: "{{ pssid_pipeline_user }}"
+    group: "{{ pssid_pipeline_user }}"
+    mode: "0644"
+  become: true
+
+- name: Render the dashboard provider provisioning file
+  ansible.builtin.template:
+    src: grafana/provisioning/dashboards/dashboards.yml.j2
+    dest: "{{ pssid_pipeline_dir }}/grafana/provisioning/dashboards/dashboards.yml"
+    owner: "{{ pssid_pipeline_user }}"
+    group: "{{ pssid_pipeline_user }}"
+    mode: "0644"
+  become: true
+
+- name: Copy the pSSID example dashboard into place
+  ansible.builtin.copy:
+    src: grafana/dashboards/example-dashboard.json
+    dest: "{{ pssid_pipeline_dir }}/grafana/dashboards/example-dashboard.json"
+    owner: "{{ pssid_pipeline_user }}"
+    group: "{{ pssid_pipeline_user }}"
+    mode: "0644"
+  become: true
+
+- name: Normalize hardcoded OpenSearch datasource UIDs in the dashboard JSON
+  ansible.builtin.replace:
+    path: "{{ pssid_pipeline_dir }}/grafana/dashboards/example-dashboard.json"
+    regexp: '"uid":\s*"{{ item }}"'
+    replace: '"uid": "{{ pssid_grafana_datasource_uid }}"'
+  become: true
+  loop: "{{ pssid_grafana_dashboard_stale_uids }}"

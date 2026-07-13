@@ -1,0 +1,28 @@
+---
+- name: Ensure the docker group exists
+  ansible.builtin.group:
+    name: docker
+    state: present
+  become: true
+
+- name: Add the pipeline user to the docker group
+  ansible.builtin.user:
+    name: "{{ pssid_pipeline_user }}"
+    groups: docker
+    append: true
+  become: true
+  register: pssid_docker_group
+
+- name: Reset the connection so new docker group membership takes effect
+  ansible.builtin.meta: reset_connection
+  when: pssid_docker_group is changed
+
+- name: Tune vm.max_map_count for OpenSearch
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: "{{ pssid_vm_max_map_count }}"
+    sysctl_file: /etc/sysctl.d/99-pssid-opensearch.conf
+    sysctl_set: true
+    reload: true
+    state: present
+  become: true

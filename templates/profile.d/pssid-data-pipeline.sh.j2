@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+# Convenience env vars for pSSID data pipeline troubleshooting (e.g.
+#   curl -k -u "$OPENSEARCH_USER:$OPENSEARCH_PASSWORD" https://localhost:9200 )
+# NOTE: this file is world-readable; only deployed when pssid_export_shell_env=true.
+export OPENSEARCH_HOST="{{ pssid_opensearch_host }}"
+export OPENSEARCH_USER="{{ pssid_opensearch_user }}"
+export OPENSEARCH_PASSWORD="{{ pssid_opensearch_password }}"

@@ -1,0 +1,8 @@
+# Collections required by this role.
+# Consumers install with:  ansible-galaxy collection install -r requirements.yml
+---
+collections:
+  - name: community.docker
+    version: ">=3.6.0"    # docker_compose_v2, docker_compose_v2_run, docker_network
+  - name: ansible.posix
+    version: ">=1.5.0"    # sysctl module
