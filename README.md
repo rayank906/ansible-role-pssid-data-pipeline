@@ -35,6 +35,8 @@ See [`defaults/main.yml`](defaults/main.yml) for the full list. The important on
 |---|---|---|
 | `pssid_pipeline_hostname` | *(required)* | Public FQDN; drives `GF_SERVER_ROOT_URL` + nginx/cert paths |
 | `pssid_opensearch_password` | *(required, vault)* | OpenSearch admin password |
+| `pssid_grafana_admin_password` | *(required, vault)* | Grafana admin password. Without it Grafana boots on `admin`/`admin` |
+| `pssid_grafana_admin_user` | `admin` | Grafana admin username |
 | `pssid_pipeline_dir` | `/opt/pssid-data-pipeline` | Where files are staged on the VM (root-owned) |
 | `pssid_enable_https` | `false` | nginx + Certbot Let's Encrypt |
 | `pssid_certbot_email` | `""` | Required when HTTPS is enabled |
@@ -43,9 +45,15 @@ See [`defaults/main.yml`](defaults/main.yml) for the full list. The important on
 | `pssid_grafana_smtp_enabled` | `false` | SMTP alerting |
 | `pssid_grafana_datasource_uid` | `opensearch-pscheduler` | Pinned datasource UID |
 
-Secrets (`pssid_opensearch_password`, `pssid_grafana_google_client_secret`,
-`pssid_grafana_smtp_password`) should come from **Ansible Vault** — never commit
-them in plaintext.
+Secrets (`pssid_opensearch_password`, `pssid_grafana_admin_password`,
+`pssid_grafana_google_client_secret`, `pssid_grafana_smtp_password`) should come
+from **Ansible Vault** — never commit them in plaintext.
+
+> **Grafana admin password:** Grafana only applies `admin_password` on the
+> **first** initialization of its database. If an instance already booted with
+> the default `admin`/`admin`, setting this variable will not retroactively
+> change it — remove the `grafana-data` volume (`docker volume rm
+> pssid-data-pipeline_grafana-data`) and re-run, or change it in the UI.
 
 ## Usage
 

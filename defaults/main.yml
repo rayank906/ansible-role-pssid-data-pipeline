@@ -57,6 +57,14 @@ pssid_opensearch_initial_admin_password: "{{ pssid_opensearch_password }}"
 # =====================================================================
 
 pssid_grafana_image: grafana/grafana-enterprise
+
+# Built-in Grafana admin. Without this Grafana boots on its factory admin/admin.
+# SECRET - supply via vault at the playbook level.
+# NOTE: Grafana only applies admin_password on FIRST init of its database. On an
+# instance that already booted with admin/admin, wipe the grafana-data volume
+# (or change the password in the UI) for this to take effect.
+pssid_grafana_admin_user: admin
+pssid_grafana_admin_password: ""
 # Root URL Grafana advertises. HTTPS when nginx is fronting it, else :3000.
 pssid_grafana_root_url: >-
   {{ 'https://' ~ pssid_pipeline_hostname

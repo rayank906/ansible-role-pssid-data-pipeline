@@ -12,9 +12,12 @@
     that:
       - pssid_pipeline_hostname | length > 0
       - pssid_opensearch_password | length > 0
+      - pssid_grafana_admin_password | length > 0
     fail_msg: >-
-      pssid_pipeline_hostname and pssid_opensearch_password are required.
-      Set them at the playbook level (the password via Ansible Vault).
+      pssid_pipeline_hostname, pssid_opensearch_password and
+      pssid_grafana_admin_password are required. Set them at the playbook level
+      (passwords via Ansible Vault). Leaving the Grafana admin password unset
+      would boot Grafana on its default admin/admin credentials.
 
 - name: Assert Certbot email is set when HTTPS is enabled
   ansible.builtin.assert:

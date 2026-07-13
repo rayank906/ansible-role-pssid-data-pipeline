@@ -16,15 +16,15 @@
   retries: 30
   delay: 5
 
-# The authenticated API checks use basic auth (admin/admin), which is only
-# available when Google SSO is disabled. When SSO is on, provisioning is still
-# applied by Grafana on startup - verify visually in the browser instead.
+# These checks use basic auth as the Grafana admin, which is only available when
+# Google SSO is disabled (SSO sets GF_AUTH_BASIC_ENABLED=false). When SSO is on,
+# provisioning still applies on startup - verify visually in the browser instead.
 - name: Verify the OpenSearch datasource was auto-provisioned
   ansible.builtin.uri:
     url: "{{ pssid_grafana_verify_url }}/api/datasources/uid/{{ pssid_grafana_datasource_uid }}"
     validate_certs: "{{ pssid_enable_https | bool }}"
-    url_username: admin
-    url_password: admin
+    url_username: "{{ pssid_grafana_admin_user }}"
+    url_password: "{{ pssid_grafana_admin_password }}"
     force_basic_auth: true
     return_content: true
   register: pssid_ds_check
@@ -37,8 +37,8 @@
   ansible.builtin.uri:
     url: "{{ pssid_grafana_verify_url }}/api/search?type=dash-db"
     validate_certs: "{{ pssid_enable_https | bool }}"
-    url_username: admin
-    url_password: admin
+    url_username: "{{ pssid_grafana_admin_user }}"
+    url_password: "{{ pssid_grafana_admin_password }}"
     force_basic_auth: true
     return_content: true
   register: pssid_dash_check

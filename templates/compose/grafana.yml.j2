@@ -8,6 +8,8 @@ services:
     environment:
       - GF_INSTALL_PLUGINS=grafana-opensearch-datasource
       - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=esnet-matrix-panel
+      - GF_SECURITY_ADMIN_USER={{ pssid_grafana_admin_user }}
+      - GF_SECURITY_ADMIN_PASSWORD={{ pssid_grafana_admin_password }}
 {% if pssid_grafana_google_sso_enabled %}
       - GF_AUTH_GOOGLE_ENABLED=true
       - GF_AUTH_GOOGLE_CLIENT_ID={{ pssid_grafana_google_client_id }}
